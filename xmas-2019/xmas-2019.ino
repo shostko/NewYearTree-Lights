@@ -8,20 +8,26 @@
 #define SCAN_FRAMES 500  // How many frames to stay on a single mode
 #define MAX_MODE    16   // Number of the last mode
 
-#define COLOR_RED   strip.Color(255, 0, 0)
-#define COLOR_GREEN strip.Color(0, 255, 0)
-#define COLOR_BLUE strip.Color(0, 0, 255)
 #define COLOR_WHITE strip.Color(255, 255, 255)
 #define COLOR_BLACK strip.Color(0, 0, 0)
+
+#define COLORS_LENGTH 3
 
 uint8_t  mode;  // What display are we doing?
 uint16_t frame; // How long have we been doing it?
 
-uint32_t selected;
+uint8_t selected = -1;
 
 uint32_t buffer[50];
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(NUM_LEDS, LEDS_PIN,
                                             NEO_RGB + NEO_KHZ800);
+
+const uint8_t colors[][3] = 
+{
+   {255, 255, 0},
+   {255, 0, 255},
+   {0, 0, 255},
+};
 
 void setup()
 {
@@ -49,20 +55,12 @@ void loop()
   switch(mode) {
   case 0: 
       if (frame == 0) {
-        if (selected == COLOR_RED) {
-          selected = COLOR_GREEN;
-        } else if (selected == COLOR_GREEN) {
-          selected = COLOR_BLUE; 
-        } else if (selected == COLOR_BLUE) {
-          selected = COLOR_WHITE;
-        } else {
-          selected = COLOR_RED;
-        }
+        selected++;
       }   
-    strip.setPixelColor(frame, selected);
+    strip.setPixelColor(frame, color(selected));
     if (frame > NUM_LEDS)
     {
-      if (selected == COLOR_WHITE) {
+      if (selected == COLORS_LENGTH - 1) {
         frame = SCAN_FRAMES;
       } else {
         frame = -1;
@@ -76,66 +74,66 @@ void loop()
   case 2: // Candy stripes (white-red)
     if(frame == 0) {
       fillBufferSolid(0, 10, COLOR_WHITE);
-      fillBufferSolid(10, 10, COLOR_RED);
+      fillBufferSolid(10, 10, color(0));
       fillBufferSolid(20, 10, COLOR_BLACK);
     }
     drawMarquee(30);
     break;
   case 3: // Candy stripes (red-green)
     if(frame == 0) {
-      fillBufferSolid(0, 10, COLOR_RED);
-      fillBufferSolid(10, 10, COLOR_GREEN);
+      fillBufferSolid(0, 10, COLOR_WHITE);
+      fillBufferSolid(10, 10, color(1));
       fillBufferSolid(20, 10, COLOR_BLACK);
     }
     drawMarquee(30);
     break;
   case 4: // Candy stripes (green-blue)
     if(frame == 0) {
-      fillBufferSolid(0, 10, COLOR_GREEN);
-      fillBufferSolid(10, 10, COLOR_BLUE);
+      fillBufferSolid(0, 10, COLOR_WHITE);
+      fillBufferSolid(10, 10, color(2));
       fillBufferSolid(20, 10, COLOR_BLACK);
     }
     drawMarquee(30);
     break;
   case 5: // Thin green stripes
     if(frame == 0) {
-      fillBufferSolid(0, 3, COLOR_GREEN);
+      fillBufferSolid(0, 3, color(0));
       fillBufferSolid(3, 7, COLOR_BLACK);
     }
     drawMarquee(10);
     break;
   case 6: // Thin red stripes
     if(frame == 0) {
-      fillBufferSolid(0, 3, COLOR_RED);
+      fillBufferSolid(0, 3, color(1));
       fillBufferSolid(3, 7, COLOR_BLACK);
     }
     drawMarquee(10);
     break;
   case 7: // Thin blue stripes
     if(frame == 0) {
-      fillBufferSolid(0, 3, COLOR_BLUE);
+      fillBufferSolid(0, 3, color(2));
       fillBufferSolid(3, 7, COLOR_BLACK);
     }
     drawMarquee(10);
     break;
   case 8: // Red/black gradient stripes
     if(frame == 0) {
-      fillBufferGradient(0,  10, 0,   0, 0, 255, 0, 0);
-      fillBufferGradient(10, 10, 255, 0, 0, 0,   0, 0);
+      fillBufferGradient(0,  10, 0,   0, 0, colors[0][0], colors[0][1], colors[0][2]);
+      fillBufferGradient(10, 10, colors[0][0], colors[0][1], colors[0][2], 0,   0, 0);
     }
     drawMarquee(20);
     break;
   case 9: // Green/black gradient stripes
     if(frame == 0) {
-      fillBufferGradient(0,  10, 0,   0, 0, 0, 255, 0);
-      fillBufferGradient(10, 10, 0, 255, 0, 0, 0,   0);
+      fillBufferGradient(0,  10, 0,   0, 0, colors[1][0], colors[1][1], colors[1][2]);
+      fillBufferGradient(10, 10, colors[1][0], colors[1][1], colors[1][2], 0, 0,   0);
     }
     drawMarquee(20);
     break;
   case 10: // Blue/black gradient stripes
     if(frame == 0) {
-      fillBufferGradient(0,  10, 0,   0, 0, 0, 0, 255);
-      fillBufferGradient(10, 10, 0, 0, 255, 0, 0,   0);
+      fillBufferGradient(0,  10, 0,   0, 0, colors[2][0], colors[2][1], colors[2][2]);
+      fillBufferGradient(10, 10, colors[2][0], colors[2][1], colors[2][2], 0, 0,   0);
     }
     drawMarquee(20);
     break;
@@ -148,10 +146,10 @@ void loop()
     break;
   case 12:
       if (frame == 0) {
-        selected =  Wheel(25 + random(230));
+        selected =  random(COLORS_LENGTH);
       }
       drawSolid(strip.Color(0,0,0));
-      colorSnake(1+random(4), selected, FRAME_DELAY + 10*random(7), false);
+      colorSnake(1+random(4), colors[selected], FRAME_DELAY + 10*random(7), false);
 //    strip.setPixelColor(frame, COLOR_BLACK);
 //    if (frame > NUM_LEDS)
 //    {
@@ -228,6 +226,7 @@ void loop()
       mode = 0;    
     }
     frame = 0;
+    selected = -1;
   }
 }
 
@@ -349,4 +348,8 @@ uint32_t Wheel(byte WheelPos) {
    WheelPos -= 170;
    return strip.Color(0, WheelPos * 3, 255 - WheelPos * 3);
   }
+}
+
+uint32_t color(uint8_t num) {
+  return strip.Color(colors[num][0], colors[num][1], colors[num][2]);
 }
