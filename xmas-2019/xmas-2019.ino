@@ -1,6 +1,7 @@
 #include <Adafruit_NeoPixel.h>
 #include <EEPROM.h>
 
+#define DEBUG false
 #define BTN_NEXT_PIN 2
 #define BTN_FIX_PIN 3
 #define LEDS_PIN 6       // What output pin is the LED strip data line?
@@ -46,8 +47,7 @@ void setup() {
     mode = 0;
   }
   frame = 0;
-  Serial.print("mode=");
-  Serial.println(mode);
+  writelog("===================\ninitial mode=", mode);
 }
 
 void loop() {
@@ -196,7 +196,7 @@ void loop() {
       }
     }
     if (!next) {
-      Serial.println("===================");
+    writelog("===================\nfixed mode=", mode);
       frame = 0;
       selected = -1;
     }
@@ -210,12 +210,9 @@ void loop() {
     EEPROM.write(EEPROM_ADDRESS, mode);
     frame = 0;
     selected = -1;
-    Serial.println("===================");
-    Serial.print("mode=");
-    Serial.println(mode);
+    writelog("===================\nnew mode=", mode);
   }
-  Serial.print("frame=");
-  Serial.println(frame);
+  writelog("frame=", frame);
 }
 
 void colorSnake(uint8_t l, uint32_t c, uint8_t wait, boolean reverse) {
@@ -320,4 +317,17 @@ uint32_t Wheel(byte WheelPos) {
 
 uint32_t color(uint8_t num) {
   return strip.Color(colors[num][0], colors[num][1], colors[num][2]);
+}
+
+void writelog(char *text) {
+  if (DEBUG) {
+    Serial.println(text);
+  }
+}
+
+template <class T> void writelog(String text, T value) {
+  if (DEBUG) {
+    Serial.print(text);
+    Serial.println(value);
+  }
 }
