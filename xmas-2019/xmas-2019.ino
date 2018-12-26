@@ -1,4 +1,5 @@
 #include <Adafruit_NeoPixel.h>
+#include <EEPROM.h>
 
 #define BTN_NEXT_PIN 2 
 #define BTN_FIX_PIN 3 
@@ -7,6 +8,8 @@
 #define FRAME_DELAY 75   // Time between frames in ms (smaller is faster)
 #define SCAN_FRAMES 500  // How many frames to stay on a single mode
 #define MAX_MODE    16   // Number of the last mode
+
+#define EEPROM_ADDRESS 0 // address in EEPROM to save selected mode
 
 #define COLOR_WHITE strip.Color(255, 255, 255)
 #define COLOR_BLACK strip.Color(0, 0, 0)
@@ -44,9 +47,13 @@ void setup()
   strip.setBrightness(64);
 //  strip.show();
 
-  mode = 0;
-//  mode = 8;
+  mode = EEPROM.read(EEPROM_ADDRESS);
+  if (mode > MAX_MODE) {
+    mode = 0;
+  }
   frame = 0;
+  Serial.print("mode=");
+  Serial.println(mode);
 }
 
 void loop()
@@ -198,23 +205,23 @@ void loop()
   
   bool next = false;
   if (digitalRead(BTN_NEXT_PIN) == HIGH) {
-//  Serial.println("next 1");
+  Serial.println("next 1");
     if (frame == 1) {
       delay(500);
     } else {
       delay(25);
     }
     if (digitalRead(BTN_NEXT_PIN) == HIGH) {
-//  Serial.println("next 2");
+  Serial.println("next 2");
       next = true;
     }
   } else if(frame > SCAN_FRAMES) {
-//  Serial.println("fix 0");
+  Serial.println("fix 0");
     if (digitalRead(BTN_FIX_PIN) == LOW) {
-//  Serial.println("fix 1");
+  Serial.println("fix 1");
       delay(25);
       if (digitalRead(BTN_FIX_PIN) == LOW) {
-//  Serial.println("fix 2");
+  Serial.println("fix 2");
         next = true;
       }
     }
@@ -224,7 +231,7 @@ void loop()
     }
   }
   if(next) {    
-//  Serial.println("===================");
+  Serial.println("===================");
 //    mode = random(MAX_MODE + 1);
     if (mode < MAX_MODE)
     {      
@@ -234,13 +241,14 @@ void loop()
     {
       mode = 0;    
     }
+    EEPROM.write(EEPROM_ADDRESS, mode);
     frame = 0;
     selected = -1;
-//  Serial.print("mode=");
-//  Serial.println(mode);
+  Serial.print("mode=");
+  Serial.println(mode);
   }
-//  Serial.print("frame=");
-//  Serial.println(frame);
+  Serial.print("frame=");
+  Serial.println(frame);
 }
 
 void colorSnake(uint8_t l, uint32_t c, uint8_t wait, boolean reverse) {
