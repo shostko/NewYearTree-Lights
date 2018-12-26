@@ -24,8 +24,8 @@ Adafruit_NeoPixel strip = Adafruit_NeoPixel(NUM_LEDS, LEDS_PIN,
 
 const uint8_t colors[][3] = 
 {
-   {255, 255, 0},
-   {255, 0, 255},
+   {255, 0, 0},
+   {0, 255, 0},
    {0, 0, 255},
 };
 
@@ -149,7 +149,7 @@ void loop()
         selected =  random(COLORS_LENGTH);
       }
       drawSolid(strip.Color(0,0,0));
-      colorSnake(1+random(4), colors[selected], FRAME_DELAY + 10*random(7), false);
+      colorSnake(1+random(4), color(selected), FRAME_DELAY + 10*random(7), false);
 //    strip.setPixelColor(frame, COLOR_BLACK);
 //    if (frame > NUM_LEDS)
 //    {
@@ -198,24 +198,33 @@ void loop()
   
   bool next = false;
   if (digitalRead(BTN_NEXT_PIN) == HIGH) {
+//  Serial.println("next 1");
     if (frame == 1) {
       delay(500);
     } else {
       delay(25);
     }
     if (digitalRead(BTN_NEXT_PIN) == HIGH) {
+//  Serial.println("next 2");
       next = true;
     }
-  }
-  if(!next && frame > SCAN_FRAMES) {
+  } else if(frame > SCAN_FRAMES) {
+//  Serial.println("fix 0");
     if (digitalRead(BTN_FIX_PIN) == LOW) {
+//  Serial.println("fix 1");
       delay(25);
       if (digitalRead(BTN_FIX_PIN) == LOW) {
+//  Serial.println("fix 2");
         next = true;
       }
     }
+    if (!next){
+      frame = 0;
+    selected = -1;
+    }
   }
   if(next) {    
+//  Serial.println("===================");
 //    mode = random(MAX_MODE + 1);
     if (mode < MAX_MODE)
     {      
@@ -227,7 +236,11 @@ void loop()
     }
     frame = 0;
     selected = -1;
+//  Serial.print("mode=");
+//  Serial.println(mode);
   }
+//  Serial.print("frame=");
+//  Serial.println(frame);
 }
 
 void colorSnake(uint8_t l, uint32_t c, uint8_t wait, boolean reverse) {
